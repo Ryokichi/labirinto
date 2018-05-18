@@ -27,7 +27,8 @@ void carregaLabirinto();
 void desenhaCena(int lab[10][20]);
 void trocaCena(int pg, int lab1[10][20], int lab2[10][20]);
 void carregaImagens();
-int moveJogador(int orientacao);
+int moveJogador(int orientacao, int cena);
+int getValorLab(int cena, int i, int j);
 ////
 
 int main(){    
@@ -35,6 +36,7 @@ int main(){
         
     int pg, tecla, cena_atual;
     int dt, dt_ini;
+    int *lab_atual;
     bool troca_cena = false;
         
     initwindow(1280, 640, "Labirinto", 0, 0);
@@ -48,19 +50,19 @@ int main(){
     dt = dt_ini;
     
     cena_atual = 1;
-    while (tecla != ESC){            
+    while (tecla != ESC){
         
         if((GetKeyState(VK_UP)&0x80) && dt <= 0){
-        	dt = moveJogador(0);
-        }
-        if ((GetKeyState(VK_LEFT)&0x80) && dt <= 0){
-        	dt = moveJogador(1);
+            dt = moveJogador(0, cena_atual);
         }
         if ((GetKeyState(VK_DOWN)&0x80)&& dt <= 0){
-        	dt = moveJogador(2);
-        }        
+        	dt = moveJogador(1, cena_atual);
+        }  
+        if ((GetKeyState(VK_LEFT)&0x80) && dt <= 0){
+        	dt = moveJogador(2, cena_atual);
+        }              
         if((GetKeyState(VK_RIGHT)&0x80)&& dt <= 0){
-        	dt = moveJogador(3);
+        	dt = moveJogador(3, cena_atual);
         }
         dt--;
                 
@@ -79,16 +81,13 @@ int main(){
             }
             cena_atual = (cena_atual < 3) ? (cena_atual+1) : 1;            
         } 
-        else {
-            switch(cena_atual){
-                case 1:
-                    desenhaCena(l1); break;
-                case 2:
-                    desenhaCena(l2); break;
-                case 3:
-                    desenhaCena(l3); break;
-            }
+        
+        switch(cena_atual){
+            case 1: desenhaCena(l1); break;
+            case 2: desenhaCena(l2); break;
+            case 3: desenhaCena(l3); break;
         }
+        
         
         if (kbhit()) tecla = getch();        
         delay(30);
@@ -100,9 +99,84 @@ int main(){
     closegraph();
 }
 
-int moveJogador(int orientacao){
-	jogador.x++;
-	return 5;
+int moveJogador(int orientacao, int cena){
+    int px = jogador.x;
+    int py = jogador.y;
+    int prox_bloco;
+    int time_delay = 0;    
+    
+    switch(orientacao){
+        ////move para cima
+        case 0:                
+            prox_bloco = getValorLab(cena, py-1, px);            
+            if (prox_bloco != 1){ 
+                jogador.y--;
+                time_delay = 5;
+            }
+            if (cena == 1){            	
+            	if (py==0){
+            		jogador.y=9;
+            		jogador.x=10;
+				}
+            }
+            if (cena == 2){            	
+            	if (py==0){
+            		jogador.y=9;
+            		jogador.x=9;
+				}
+            }
+            break;
+
+        ////move para baixo
+        case 1:                
+            prox_bloco = getValorLab(cena, py+1, px);
+            if (prox_bloco != 1){ 
+                jogador.y++;
+                time_delay = 5;
+            }
+            if (cena == 1){            	
+            	if (py==9){
+            		jogador.y=0;
+            		jogador.x=15;
+				}
+            }
+            if (cena == 2){            	
+            	if (py==9){
+            		jogador.y=0;
+            		jogador.x=14;
+				}
+            }
+            break;
+        ////move para esquerda
+        case 2:
+            prox_bloco = getValorLab(cena, py, px-1);
+            if (prox_bloco != 1){ 
+                jogador.x--;
+                time_delay = 5;
+            }
+            break;
+        ////move para direita
+        case 3:
+            prox_bloco = getValorLab(cena, py, px+1);
+            if (prox_bloco != 1){ 
+                jogador.x++;
+                time_delay = 5;
+            }
+                     	
+            if (px==19){            		
+            	jogador.x=20;
+		    }
+        
+            break;
+    }    	
+	return time_delay;
+}
+
+int getValorLab(int cena, int i, int j){
+    if (cena == 1) return l1[i][j];
+    if (cena == 2) return l2[i][j];
+    if (cena == 3) return l3[i][j];
+
 }
 
 void desenhaCena(int lab[10][20]){    
@@ -121,8 +195,10 @@ void desenhaCena(int lab[10][20]){
 }
 
 void trocaCena(int pg, int lab1[10][20], int lab2[10][20]){    
-    int index;   
-    
+    int index;    
+    desenhaCena(lab1);
+    setvisualpage(pg);
+	    
     for(int p=0; p < 20; p++){
         pg = (pg==0) ? 1 : 0;
         setactivepage(pg);
@@ -142,7 +218,7 @@ void trocaCena(int pg, int lab1[10][20], int lab2[10][20]){
            }
         }        
         setvisualpage(pg);
-        delay(10);
+        delay(5);
         jogador.x --;
     }    
      
@@ -152,7 +228,7 @@ void carregaImagens(){
     char path[4096], c_aux[4096];
     int img_size = imagesize(0,0,63,63);
     
-    for(int i=0; i<3; i++){
+    for(int i=0; i<4; i++){
         Img img;        
         tile_pool = (Img*)realloc(tile_pool, sizeof(Img)*(i+1));        
                 
@@ -216,12 +292,12 @@ void carregaLabirinto(){
     */
     
     int cor;
-        
+            
     readimagefile("img/lab_1.bmp", 0, 0, 20, 10);        
     for (int i=0; i<10; i++){
         for (int j=0; j<20; j++){
             cor = getpixel(j,i);            
-            cor = (cor < 15) ? (cor+1) : 0;
+            cor = (cor < 15) ? (cor+1) : 0;            
             l1[i][j] = cor;            
         }
     }
