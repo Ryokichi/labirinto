@@ -10,6 +10,9 @@ HEITOR RYOKICHI NAKAMURA
 RENAN ALVES NOWAK 
 WILSON RICARDO DA SILVA FABOZI
 
+Agradecimentos:
+BRENO SOUZA PEREIRA, por criar sprites do personagem.
+
 
 Atividade:
 Criar 3 labirintos distintos, onde um personagem pode se transportar de um ponto a outro em pontos específicos

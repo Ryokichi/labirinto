@@ -3,17 +3,19 @@
 #include <graphics.h>
 using namespace std;
 
-#define ESC        27
+#define ESC            27
+#define NUM_IMG_CHAR   4
+#define NUM_IMG_TILES  4
 
 struct Player {
-    int x = 18;
-    int y = 1;
+    int x = 2;
+    int y = 6;
     int sprite = 0;
 };
 
 struct Img {    
     void *a = malloc(imagesize(0,0,63,63));
-    void *b = malloc(imagesize(0,0,63,63));    
+    void *b = malloc(imagesize(0,0,63,63));
 };
 
 ////Variaveis globais
@@ -33,6 +35,7 @@ int getValorLab(int cena, int i, int j);
 
 int main(){    
     printf("Integrantes: \nCAROLINE GONCALVES DE FELIPE \nHEITOR RYOKICHI NAKAMURA \nRENAN ALVES NOWAK \nWILSON RICARDO DA SILVA FABOZI\n\n");
+    printf("Agradecimetos especiais, pelos sprites do personagem a: \nBRENO SOUZA PEREIRA\n\n");
         
     int pg, tecla, cena_atual;
     int dt, dt_ini;
@@ -79,7 +82,7 @@ int main(){
                     break;
 
             }
-            cena_atual = (cena_atual < 3) ? (cena_atual+1) : 1;            
+            cena_atual = (cena_atual < 3) ? (cena_atual+1) : 1;
         } 
         
         switch(cena_atual){
@@ -89,7 +92,7 @@ int main(){
         }
         
         
-        if (kbhit()) tecla = getch();        
+        if (kbhit()) tecla = getch();
         delay(30);
         setvisualpage(pg);
         pg = (pg==0) ? 1 : 0;
@@ -108,7 +111,7 @@ int moveJogador(int orientacao, int cena){
     switch(orientacao){
         ////move para cima
         case 0:                
-            prox_bloco = getValorLab(cena, py-1, px);            
+            prox_bloco = getValorLab(cena, py-1, px);
             if (prox_bloco != 1){ 
                 jogador.y--;
                 time_delay = 5;
@@ -134,7 +137,7 @@ int moveJogador(int orientacao, int cena){
                 jogador.y++;
                 time_delay = 5;
             }
-            if (cena == 1){            	
+            if (cena == 1){
             	if (py==9){
             		jogador.y=0;
             		jogador.x=15;
@@ -168,7 +171,8 @@ int moveJogador(int orientacao, int cena){
 		    }
         
             break;
-    }    	
+    }
+    jogador.sprite ++;
 	return time_delay;
 }
 
@@ -188,13 +192,15 @@ void desenhaCena(int lab[10][20]){
         }    
     }
     
-    jogador.sprite ++;
-    if (jogador.sprite > 5) jogador.sprite = 0;
+    //jogador.sprite ++;
+    if (jogador.sprite >= NUM_IMG_CHAR) jogador.sprite = 0;
     putimage(jogador.x*64, jogador.y*64, img_player[jogador.sprite].b, 2);
     putimage(jogador.x*64, jogador.y*64, img_player[jogador.sprite].a, 3);
+    //putimage(jogador.x*64, jogador.y*64, img_player[1].b, 2);
+    //putimage(jogador.x*64, jogador.y*64, img_player[1].a, 3);
 }
 
-void trocaCena(int pg, int lab1[10][20], int lab2[10][20]){    
+void trocaCena(int pg, int lab1[10][20], int lab2[10][20]){
     int index;    
     desenhaCena(lab1);
     setvisualpage(pg);
@@ -228,44 +234,46 @@ void carregaImagens(){
     char path[4096], c_aux[4096];
     int img_size = imagesize(0,0,63,63);
     
-    for(int i=0; i<4; i++){
+    setactivepage(2);
+    setvisualpage(2);
+    for(int i=0; i<NUM_IMG_TILES; i++){
         Img img;        
-        tile_pool = (Img*)realloc(tile_pool, sizeof(Img)*(i+1));        
+        tile_pool = (Img*)realloc(tile_pool, sizeof(Img)*(i+1));
                 
         strcpy(path, "img/tile_");
         sprintf(c_aux, "%d", i);
         strcat(path, c_aux);
         strcat(path, ".bmp");    
         
-        setactivepage(2);
         readimagefile(path, 0, 0, 63, 63);
         getimage(0, 0, 63, 63, img.a);
         
-        tile_pool[i] = img;        
+        tile_pool[i] = img;		
     }
     
-    for(int i=0; i<6; i++){  
+    
+    
+    for(int i=0; i<NUM_IMG_CHAR; i++){  
         Img img;               
         img_player = (Img*)realloc(img_player, sizeof(Img)*(i+1));
         
-                
-        strcpy(path, "img/player_");
+        strcpy(path, "img/ply_a_");
         sprintf(c_aux, "%d", i);
         strcat(path, c_aux);
         strcat(path, ".bmp");
         
-        setactivepage(2);
         readimagefile(path, 0, 0, 63, 63);
-        getimage(0, 0, 63, 63, img.a);
+        getimage(0, 0, 63, 63, img.a);  
         
-        strcpy(path, "img/player_b");
+        
+        strcpy(path, "img/ply_b_");
         sprintf(c_aux, "%d", i);
         strcat(path, c_aux);
         strcat(path, ".bmp");        
         
         readimagefile(path, 0, 0, 63, 63);
-        getimage(0, 0, 63, 63, img.b);
-        
+        getimage(0, 0, 63, 63, img.b);       
+      
         img_player[i] = img;        
     }
         
